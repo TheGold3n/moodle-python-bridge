@@ -1,0 +1,116 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Servicio 1: API Django KioskBridge (con soporte para puente hacia Moodle)
+  # ----------------------------------------------------------------------------
+  django:
+    build: .
+    container_name: kioskbridge_django
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:
+      - DEBUG=True
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      # En la red interna de Docker, Moodle se resuelve por el nombre de servicio 'moodle'
+      - MOODLE_BASE_URL=http://moodle:8080
+    volumes:
+      - .:/app
+    depends_on:
+      - mongodb
+      - moodle
+    networks:
+      - kiosk-network
+
+  # ----------------------------------------------------------------------------
+  # Servicio 2: Motor de Base de Datos MongoDB (KioskBridge)
+  # ----------------------------------------------------------------------------
+  mongodb:
+    image: mongo:6.0
+    container_name: kioskbridge_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-example}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-kioskbridge_db}
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - kiosk-network
+
+  # ----------------------------------------------------------------------------
+  # Servicio 3: Base de Datos MySQL oficial (Requerida por Moodle)
+  # ----------------------------------------------------------------------------
+  mysql:
+    image: mysql:8.0
+    container_name: kioskbridge_mysql
+    restart: unless-stopped
+    command: [
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci',
+      '--default-authentication-plugin=mysql_native_password'
+    ]
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-moodle_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-moodle}
+      MYSQL_USER: ${MYSQL_USER:-moodle_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-moodle_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - kiosk-network
+
+  # ----------------------------------------------------------------------------
+  # Servicio 4: Plataforma Moodle (LMS)
+  # ----------------------------------------------------------------------------
+  moodle:
+    image: bitnamilegacy/moodle:latest
+    container_name: kioskbridge_moodle
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      MOODLE_DATABASE_HOST: mysql
+      MOODLE_DATABASE_PORT_NUMBER: 3306
+      MOODLE_DATABASE_NAME: ${MYSQL_DATABASE:-moodle}
+      MOODLE_DATABASE_USER: ${MYSQL_USER:-moodle_user}
+      MOODLE_DATABASE_PASSWORD: ${MYSQL_PASSWORD:-moodle_password}
+      MOODLE_USERNAME: ${MOODLE_ADMIN_USER:-admin}
+      MOODLE_PASSWORD: ${MOODLE_ADMIN_PASSWORD:-Moodle123!}
+      MOODLE_EMAIL: ${MOODLE_ADMIN_EMAIL:-admin@example.com}
+      MOODLE_SITE_NAME: ${MOODLE_SITE_NAME:-KioskBridge Moodle PoC}
+      ALLOW_EMPTY_PASSWORD: "no"
+    volumes:
+      - moodle_data:/bitnami/moodle
+      - moodledata_data:/bitnami/moodledata
+    depends_on:
+      - mysql
+    networks:
+      - kiosk-network
+
+# ------------------------------------------------------------------------------
+# Volúmenes persistentes
+# ------------------------------------------------------------------------------
+volumes:
+  mongodb_data:
+    driver: local
+  mysql_data:
+    driver: local
+  moodle_data:
+    driver: local
+  moodledata_data:
+    driver: local
+
+# ------------------------------------------------------------------------------
+# Red de comunicación interna
+# ------------------------------------------------------------------------------
+networks:
+  kiosk-network:
+    driver: bridge

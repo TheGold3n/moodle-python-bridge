@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KioskBridge API - Resumen de Transacciones</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #1e293b;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: #334155;
+        }
+
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+        }
+
+        .badge-role {
+            background: #2563eb;
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 1.75rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.75rem;
+        }
+
+        .badge-info {
+            display: inline-block;
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status-aceptado {
+            color: var(--success);
+            font-weight: 600;
+            background: #dcfce7;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .status-rechazado {
+            color: var(--danger);
+            font-weight: 600;
+            background: #fee2e2;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #64748b;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <span>🛒 KioskBridge</span>
+            <span class="badge-role">Modo Kiosco</span>
+        </div>
+        <div class="nav-links">
+            <a href="/" class="nav-link active">🏪 Modo Kiosco (Resumen)</a>
+            <a href="/admin-panel/" class="nav-link">⚙️ Gestión de Productos</a>
+            <a href="/api/moodle/usuarios/?mock=true" target="_blank" class="nav-link">🎓 Puente Moodle API</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>KioskBridge API — Resumen de Transacciones</h1>
+        <div class="badge-info">Origen de datos: <code>datos.json</code> (Sin Base de Datos Relacional)</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock Inicial</th>
+                    <th>Cantidad</th>
+                    <th>Estado</th>
+                    <th>Motivo</th>
+                    <th>Stock Restante</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in registros %}
+                <tr>
+                    <td><strong>{{ r.producto }}</strong></td>
+                    <td>{{ r.stock_inicial }}</td>
+                    <td>{{ r.cantidad }}</td>
+                    <td>
+                        {% if r.estado == 'Aceptado' %}
+                            <span class="status-aceptado">{{ r.estado }}</span>
+                        {% else %}
+                            <span class="status-rechazado">{{ r.estado }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ r.motivo }}</td>
+                    <td><strong>{{ r.stock_restante }}</strong></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-message">
+                        ⚠️ No se encontraron transacciones registradas en <code>datos.json</code>. Ejecute <code>python solucion.py</code> para ingresar transacciones desde la consola CLI.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

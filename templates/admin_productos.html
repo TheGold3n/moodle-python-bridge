@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KioskBridge - Panel Administrador de Productos</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #1e293b;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: #334155;
+        }
+
+        .nav-link.active {
+            color: white;
+            background: var(--primary);
+        }
+
+        .badge-role {
+            background: #dc2626;
+            color: white;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Contenedor Principal */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            margin: 0;
+            font-size: 1.75rem;
+            color: #0f172a;
+        }
+
+        .header-title p {
+            margin: 0.25rem 0 0 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Alertas */
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* Estadísticas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            color: #0f172a;
+        }
+
+        /* Color de estado para el stock crítico */
+        .stat-value-ok   { color: #16a34a; }
+        .stat-value-warn { color: #dc2626; }
+
+        /* Grid Layout: Formulario + Tabla */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: #ffffff;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        /* Formulario */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #334155;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: #ffffff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-danger-sm {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #fca5a5;
+            cursor: pointer;
+        }
+
+        .btn-danger-sm:hover {
+            background: #fca5a5;
+            color: #7f1d1d;
+        }
+
+        /* Tabla */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 0.9rem 1.2rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .badge-stock {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .stock-ok  { background: #dcfce7; color: #15803d; }
+        .stock-low { background: #fef3c7; color: #b45309; }
+        .stock-out { background: #fee2e2; color: #b91c1c; }
+
+        .badge-cat {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .price-tag {
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #0f172a;
+        }
+
+        .price-tag-highlight {
+            font-family: monospace;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--primary);
+        }
+
+        .form-inline {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar con Selector de Modo / Perfil -->
+    <nav class="navbar">
+        <!-- FIX: Cambiado de <div> a <a> para que sea un enlace válido con href -->
+        <a href="/" class="navbar-brand">
+            <span>&#x1F6D2; KioskBridge</span>
+            <span class="badge-role">Modo Administrador</span>
+        </a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">&#x1F3EA; Modo Kiosco (Resumen)</a>
+            <a href="/admin-panel/" class="nav-link active">&#x2699;&#xFE0F; Gestión de Productos</a>
+            <a href="/api/moodle/usuarios/?mock=true" target="_blank" rel="noopener noreferrer" class="nav-link">&#x1F393; Puente Moodle API</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="header-title">
+                <h1>Perfil de Administrador &mdash; Catálogo e Inventario</h1>
+                <p>Ingreso y administración de productos, stock disponible y precios unitarios en <code>productos.json</code></p>
+            </div>
+        </div>
+
+        <!-- Mensajes de Estado -->
+        {% if mensaje %}
+        <div class="alert alert-{{ tipo_mensaje|default:'success' }}">
+            <span>{{ mensaje }}</span>
+        </div>
+        {% endif %}
+
+        <!-- Tarjetas de Métricas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">&#x1F4E6; Total Productos</span>
+                <span class="stat-value">{{ total_productos }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">&#x1F4CA; Unidades en Stock</span>
+                <span class="stat-value">{{ total_stock }}</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">&#x1F4B0; Valor Inventario Total</span>
+                <span class="stat-value">${{ valor_inventario }}</span>
+            </div>
+            <!-- FIX: Style inline con Django tags movido a clases CSS estáticas -->
+            <div class="stat-card">
+                <span class="stat-label">&#x26A0;&#xFE0F; Stock Crítico (&le; 5)</span>
+                {% if stock_critico > 0 %}
+                <span class="stat-value stat-value-warn">{{ stock_critico }}</span>
+                {% else %}
+                <span class="stat-value stat-value-ok">{{ stock_critico }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Layout Principal: Formulario + Listado -->
+        <div class="main-grid">
+            <!-- Columna Izquierda: Formulario de Ingreso -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>&#x2795; Ingresar Nuevo Producto</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="/admin-panel/">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="crear">
+
+                        <div class="form-group">
+                            <label for="nombre">Nombre del Producto *</label>
+                            <!-- FIX: autofocus como atributo booleano válido en HTML5 -->
+                            <input type="text" id="nombre" name="nombre"
+                                   placeholder="Ej: Bebida Cola 500ml" required autofocus="autofocus">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoria">Categoría</label>
+                            <select id="categoria" name="categoria">
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Alimentos">Alimentos / Comida</option>
+                                <option value="Cafeteria">Cafetería</option>
+                                <option value="Otros">Otros</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cantidad">Cantidad en Stock *</label>
+                            <input type="number" id="cantidad" name="cantidad"
+                                   min="0" step="1" placeholder="Ej: 20" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="precio">Precio Unitario ($ CLP) *</label>
+                            <input type="number" id="precio" name="precio"
+                                   min="0" step="1" placeholder="Ej: 1500" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            &#x1F4BE; Guardar Producto
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tabla de Inventario -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>&#x1F4CB; Catálogo de Productos Registrados</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Cantidad (Stock)</th>
+                                <th>Precio Unitario</th>
+                                <th>Total Valor</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in productos %}
+                            <tr>
+                                <td><strong>#{{ p.id }}</strong></td>
+                                <td><strong>{{ p.nombre }}</strong></td>
+                                <td>
+                                    <span class="badge-cat">{{ p.categoria|default:"General" }}</span>
+                                </td>
+                                <td>
+                                    {% if p.cantidad <= 0 %}
+                                        <span class="badge-stock stock-out">Agotado (0)</span>
+                                    {% elif p.cantidad <= 5 %}
+                                        <span class="badge-stock stock-low">Bajo ({{ p.cantidad }})</span>
+                                    {% else %}
+                                        <span class="badge-stock stock-ok">{{ p.cantidad }} unid.</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="price-tag">${{ p.precio }}</span>
+                                </td>
+                                <td>
+                                    <!-- FIX: Clase CSS en lugar de style inline con color -->
+                                    <span class="price-tag-highlight">${{ p.valor_total }}</span>
+                                </td>
+                                <td>
+                                    <!-- FIX: onsubmit con comillas dobles externas y escapado correcto -->
+                                    <form method="POST" action="/admin-panel/" class="form-inline"
+                                          onsubmit="return confirm('¿Deseas eliminar este producto del inventario?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="accion" value="eliminar">
+                                        <input type="hidden" name="producto_id" value="{{ p.id }}">
+                                        <button type="submit" class="btn-danger-sm">&#x1F5D1;&#xFE0F; Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="empty-state">
+                                    &#x1F4E6; No hay productos registrados aún. Utiliza el formulario lateral para ingresar el primero.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
