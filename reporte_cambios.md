@@ -23,7 +23,7 @@ El proyecto **KioskBridge API** fue construido y validado localmente en Windows 
 
 ---
 
-## 3. Estructura Final del Directorio (`C:\Users\alumnosnunoa\Desktop\kioskbridge_api`)
+## 3. Estructura Final del Directorio (`./kioskbridge_api`)
 
 ```
 kioskbridge_api/
