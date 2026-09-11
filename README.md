@@ -315,3 +315,14 @@ docker compose down -v
 docker compose exec django python manage.py check
 ```
 
+---
+
+## 📄 Licencia
+
+Este proyecto y su código fuente están bajo la [Licencia MIT](LICENSE). 
+El autor ("Velvyn") permite el uso comercial, modificación y distribución, siempre que se mantenga el aviso de copyright y la exención de garantía presentes en el archivo de licencia.
+
+## ⚠️ Aviso Legal
+
+Este software se proporciona "AS IS" (tal cual), sin garantías de ningún tipo.
+Dado que funciona como middleware o proxy que puede manejar transacciones críticas, el consumidor o integrador asume total y exclusiva responsabilidad al utilizar y exponer estos endpoints en entornos de producción. El autor no se hace responsable por ninguna pérdida de datos, interrupciones del servicio, o cualquier otro fallo derivado del uso de este software.
